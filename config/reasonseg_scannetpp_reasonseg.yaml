@@ -1,0 +1,112 @@
+# "nuscenes" or "kitti"
+dataset : "scannetpp"
+#mode: 'finetune' #'source_free'
+mode: 'reasonseg' #''
+working_dir : "output/downstream/scannetpp/"
+# if set to True, use cylindrical coordinates, otherwise use cartesian
+cylindrical_coordinates : False
+# size of the voxel in each dimension for cartesian coordinates,
+# and in rho and z for cylindrical (angular is always 1°)
+voxel_size : 0.05
+batch_size : 1
+# learning rate
+lr : 0.1
+sgd_momentum : 0.9
+sgd_dampening : 0.1
+weight_decay : 0.0001
+num_epochs : 0
+# used in superpixel loss only, drop points and pixels from the computation of the loss
+dropout : 0.
+# number of GPUs and CPU threads to use
+num_gpus : 1
+num_threads : 16
+kernel_size : 3
+model_n_out : 101
+bn_momentum : 0.05
+crop_size : [224, 416]
+# crop_size: [1024, 1536]
+crop_ratio : [1.5555555555555556, 1.8888888888888888]
+freeze_layers : False
+# point cloud backbone to use among "minkunet" and "voxelnet"
+model_points : "minkunet"
+# which image pretraining to chose among:
+# 'imagenet','obow', 'pixpro', 'moco_v1', 'moco_v2', 'swav',
+# 'deepcluster_v2', 'dino', 'moco_coco'
+image_weights : "moco_v2"
+#image_weights : None
+# which image encoder to use (only imagenet is available with resnet18)
+#images_encoder : "resnet50"
+images_encoder : "maskclip"
+# which image decoder to use
+# 'bilinear', 'unet', 'fpn', 'semseg', 'nnfe', 'dilation', 'ppkt'
+decoder : "dilation"
+# temperature parameter in the InfoNCE loss
+NCE_temperature : 0.07
+# number of positive matches in the InfoNCE loss
+num_matches : 4096
+# whether to use the true validation set or the custom parametrization set
+training : "training"
+# transformations to apply to the clouds
+transforms_clouds : ["Rotation", "FlipAxis"]
+# transformations to apply to both the clouds and the images among:
+# 'FlipHorizontal', 'DropCuboids', 'ResizedCrop'
+#transforms_mixed : ["DropCuboids", "ResizedCrop", "FlipHorizontal"]
+
+transforms_mixed : ["ResizedCrop", "FlipHorizontal"]
+# which losses to use (note that multiple losses will be summed)
+
+loss : "lovasz"  # "crossentropy"
+# LISA inference
+seg_token_idx: 0  # 
+train_mask_decoder: False  # freeze LISA
+out_dim: 512
+vision_pretrained: 'PATH_TO_SAM_ViT-H'  #
+version: xinlai/LISA-13B-llama2-v1
+precision: bf16
+conv_type: llava_v1
+# min pixels: 800
+vision_tower: openai/clip-vit-large-patch14
+model_max_length: 512
+local_rank: 0
+image_size: 1024
+use_mm_start_end: True
+points_path: /workspaces/liziwen/hjxmbzuai/datasets/scannetpp/prepare_sem_data
+dataRoot_scannetpp: /l/users/jiaxin.huang/jiaxin/dataset/scannetpp
+# train_file: /workspaces/liziwen/hjxmbzuai/datasets/scannetpp/splits/train_2.txt
+# val_file: /workspaces/liziwen/hjxmbzuai/datasets/scannetpp/splits/val_2.txt
+train_file: /l/users/jiaxin.huang/jiaxin/dataset/scannetpp/splits/train_test.txt
+val_file: /l/users/jiaxin.huang/jiaxin/dataset/scannetpp/splits/train_test.txt
+train_description: /home/jiaxin.huang/jiaxin/val_test.json
+val_description: /home/jiaxin.huang/jiaxin/val_test.json
+
+# which kind of superpixels to use
+superpixels_type : "slic"
+# only keep 1 in dataset_skip_step training examples (here use 100% of the data)
+dataset_skip_step : 1
+# path to weights to continue a previous training
+resume_path : Null
+# pretraining_path: /workspaces/liziwen/hjxmbzuai/reasonseg/output/clip2scene/scannetpp/031124-1333/model.pt
+pretraining_path: /home/jiaxin.huang/jiaxin/reasonseg_0/output/reasonseg/scannetpp/model.pt
+max_sweeps: 1
+
+# text_categories: 100
+# text_embeddings_path: '/workspaces/liziwen/hjxmbzuai/reasonseg/scannetpp_top100_ViT16_clip_text.pth'
+
+# text_categories: 20
+# text_embeddings_path: '/vepfs/home/wangzhaoqing/runnan/projects/CLIP2Scene/scannet_ViT16_clip_text.pth'
+
+#text_categories: 19
+#text_embeddings_path: '/mnt/lustre/chenrunnan/projects/MaskCLIP/pretrain/city_ViT16_clip_text.pth'
+
+#text_categories: 24
+#text_embeddings_path: '/mnt/lustre/chenrunnan/projects/MaskCLIP/pretrain/nuscenes_and_kitti_ViT16_clip_text.pth'
+
+# maskclip_checkpoint: '/vepfs/home/wangzhaoqing/runnan/projects/CLIP2Scene/ViT16_clip_backbone.pth'
+# visual_projs_path: '/vepfs/home/wangzhaoqing/runnan/projects/CLIP2Scene/ViT16_clip_weights.pth'
+prototype_num: 128
+
+# WARNING: DO NOT CHANGE THE FOLLOWING PARAMETERS
+# ===============================================
+normalize_features : False
+superpixel_size : 150
+ignore_index : 0
