@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MLLM-For3D | NeurIPS 2025</title>
+  <meta name="description" content="MLLM-For3D: Adapting Multimodal Large Language Model for 3D Reasoning Segmentation. Accepted at NeurIPS 2025. Label-free 3D reasoning segmentation via 2D-to-3D knowledge transfer.">
+  <meta name="keywords" content="MLLM-For3D, 3D reasoning segmentation, multimodal large language model, NeurIPS 2025, 3D scene understanding, point cloud, label-free, LISA">
+  <meta property="og:title" content="MLLM-For3D: Adapting Multimodal Large Language Model for 3D Reasoning Segmentation">
+  <meta property="og:description" content="Label-free 3D reasoning segmentation via 2D-to-3D MLLM knowledge transfer. NeurIPS 2025.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="MLLM-For3D | NeurIPS 2025">
+  <meta name="twitter:description" content="Label-free 3D reasoning segmentation via 2D-to-3D MLLM knowledge transfer.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&family=Charter:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    @font-face { font-family: 'Aptos'; src: local('Aptos'), local('Calibri'); }
+    :root {
+      --c-bg: #f4f2ed;
+      --c-bg-warm: #eceae4;
+      --c-surface: #faf9f6;
+      --c-celadon: #6b9b8a;
+      --c-celadon-deep: #4e7e6d;
+      --c-celadon-light: #a8c8b8;
+      --c-celadon-mist: #d4e4db;
+      --c-sage: #8a9e8a;
+      --c-dust: #b8a99a;
+      --c-rose: #c4a4a0;
+      --c-text: #3a3a38;
+      --c-text-sec: #6a6a66;
+      --c-text-light: #8a8a86;
+      --c-border: #d8d5ce;
+      --c-gold: #b8a060;
+      --font-heading: 'Charter', 'Aptos', Georgia, serif;
+      --font-body: 'Lato', 'Aptos', system-ui, sans-serif;
+      --max-w: 880px;
+      --radius: 10px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { font-family: var(--font-body); color: var(--c-text); background: var(--c-bg); line-height: 1.72; -webkit-font-smoothing: antialiased; }
+
+    /* ── Language Toggle ── */
+    .lang-toggle { position: fixed; top: 16px; right: 16px; z-index: 999; display: flex; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: 20px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+    .lang-btn { padding: 6px 16px; font-size: 0.82rem; font-family: var(--font-body); font-weight: 700; border: none; cursor: pointer; transition: all .25s; background: transparent; color: var(--c-text-sec); letter-spacing: 0.5px; }
+    .lang-btn.active { background: var(--c-celadon); color: #fff; }
+    .lang-btn:hover:not(.active) { background: var(--c-celadon-mist); }
+    [lang-cn] { display: none; }
+    body.zh [lang-en] { display: none; }
+    body.zh [lang-cn] { display: unset; }
+    body.zh [lang-cn].flex-show { display: flex; }
+    body.zh [lang-en].flex-show { display: none; }
+
+    /* ── Hero ── */
+    .hero { text-align: center; padding: 72px 20px 36px; background: linear-gradient(175deg, var(--c-celadon-mist) 0%, var(--c-bg) 55%); position: relative; overflow: hidden; }
+    .hero::before { content: ''; position: absolute; top: -120px; right: -80px; width: 360px; height: 360px; background: radial-gradient(circle, rgba(107,155,138,0.12) 0%, transparent 70%); border-radius: 50%; }
+    .venue { display: inline-block; background: var(--c-celadon); color: #fff; font-size: 0.75rem; font-weight: 700; padding: 5px 18px; border-radius: 20px; letter-spacing: 1.2px; text-transform: uppercase; margin-bottom: 16px; }
+    .hero h1 { font-family: var(--font-heading); font-size: clamp(1.5rem, 3.8vw, 2.2rem); font-weight: 700; line-height: 1.32; max-width: 760px; margin: 0 auto 18px; color: var(--c-text); }
+    .authors { font-size: 0.95rem; color: var(--c-text-sec); max-width: 680px; margin: 0 auto 6px; line-height: 1.8; }
+    .authors a { color: var(--c-celadon-deep); text-decoration: none; border-bottom: 1px dotted var(--c-celadon-light); }
+    .authors a:hover { color: var(--c-celadon); border-bottom-style: solid; }
+    .authors sup { font-size: 0.65em; color: var(--c-celadon); }
+    .affil { font-size: 0.82rem; color: var(--c-text-light); margin-bottom: 22px; }
+    .affil sup { font-size: 0.65em; color: var(--c-celadon); }
+
+    /* ── Link Bar ── */
+    .links { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-bottom: 8px; }
+    .lnk { display: inline-flex; align-items: center; gap: 7px; padding: 8px 18px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; text-decoration: none; border: 1.5px solid var(--c-border); color: var(--c-text); background: var(--c-surface); transition: all .22s; }
+    .lnk:hover { border-color: var(--c-celadon); color: var(--c-celadon-deep); box-shadow: 0 3px 14px rgba(107,155,138,0.15); transform: translateY(-1px); }
+    .lnk i, .lnk .ai { font-size: 1.05rem; }
+
+    /* ── Container ── */
+    .wrap { max-width: var(--max-w); margin: 0 auto; padding: 0 20px; }
+
+    /* ── Teaser ── */
+    .teaser { text-align: center; margin: 40px auto 48px; max-width: var(--max-w); padding: 0 20px; }
+    .teaser img { width: 100%; border-radius: var(--radius); box-shadow: 0 6px 28px rgba(0,0,0,0.07); }
+    .teaser figcaption { margin-top: 10px; font-size: 0.84rem; color: var(--c-text-light); max-width: 700px; margin-left: auto; margin-right: auto; }
+
+    /* ── Sections ── */
+    section { margin-bottom: 48px; }
+    .sec-title { font-family: var(--font-heading); font-size: 1.35rem; font-weight: 700; margin-bottom: 16px; color: var(--c-text); display: flex; align-items: center; gap: 10px; }
+    .sec-title::before { content: ''; width: 4px; height: 22px; background: var(--c-celadon); border-radius: 2px; flex-shrink: 0; }
+    section p { margin-bottom: 12px; color: var(--c-text-sec); font-size: 0.95rem; }
+    section strong { color: var(--c-text); }
+
+    /* ── Highlight Pills ── */
+    .pills { display: flex; flex-wrap: wrap; gap: 10px; margin: 18px 0; }
+    .pill { display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius); font-size: 0.88rem; transition: all .2s; cursor: default; flex: 1; min-width: 200px; }
+    .pill:hover { border-color: var(--c-celadon); background: var(--c-celadon-mist); }
+    .pill-icon { font-size: 1.3rem; flex-shrink: 0; }
+    .pill-text { line-height: 1.4; }
+    .pill-text b { display: block; font-size: 0.82rem; color: var(--c-celadon-deep); font-weight: 700; }
+    .pill-text span { font-size: 0.8rem; color: var(--c-text-sec); }
+
+    /* ── Table ── */
+    .tbl-wrap { overflow-x: auto; margin: 14px 0; border-radius: var(--radius); border: 1px solid var(--c-border); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    thead { background: var(--c-celadon-mist); }
+    th { padding: 10px 14px; font-weight: 700; color: var(--c-celadon-deep); font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.5px; text-align: center; }
+    td { padding: 9px 14px; text-align: center; border-top: 1px solid var(--c-border); color: var(--c-text-sec); }
+    th:first-child, td:first-child { text-align: left; }
+    tr.best { background: rgba(107,155,138,0.08); }
+    tr.best td { color: var(--c-celadon-deep); font-weight: 700; }
+
+    /* ── Accordion ── */
+    .acc { border: 1px solid var(--c-border); border-radius: var(--radius); margin-bottom: 10px; overflow: hidden; }
+    .acc-head { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; background: var(--c-surface); cursor: pointer; font-weight: 700; font-size: 0.92rem; transition: background .2s; user-select: none; }
+    .acc-head:hover { background: var(--c-celadon-mist); }
+    .acc-arrow { transition: transform .25s; font-size: 0.8rem; color: var(--c-celadon); }
+    .acc.open .acc-arrow { transform: rotate(180deg); }
+    .acc-body { max-height: 0; overflow: hidden; transition: max-height .35s ease; }
+    .acc.open .acc-body { max-height: 800px; }
+    .acc-inner { padding: 4px 18px 18px; font-size: 0.88rem; color: var(--c-text-sec); line-height: 1.65; }
+    .acc-inner code { background: var(--c-bg-warm); padding: 2px 6px; border-radius: 4px; font-size: 0.82rem; }
+
+    /* ── Method Steps ── */
+    .method-steps { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 18px 0; }
+    .method-step { background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius); padding: 16px 18px; transition: all .2s; }
+    .method-step:hover { border-color: var(--c-celadon); box-shadow: 0 3px 14px rgba(107,155,138,0.1); }
+    .method-step .step-num { display: inline-block; background: var(--c-celadon); color: #fff; width: 24px; height: 24px; border-radius: 50%; text-align: center; line-height: 24px; font-size: 0.75rem; font-weight: 700; margin-bottom: 8px; }
+    .method-step h4 { font-size: 0.9rem; color: var(--c-celadon-deep); margin-bottom: 6px; font-family: var(--font-heading); }
+    .method-step p { font-size: 0.82rem; margin: 0; color: var(--c-text-sec); line-height: 1.5; }
+
+    /* ── Framework Image ── */
+    .framework-img { margin: 24px 0; text-align: center; }
+    .framework-img img { width: 100%; border-radius: var(--radius); box-shadow: 0 4px 20px rgba(0,0,0,0.06); background: #1a1a1a; padding: 12px; }
+    .framework-img figcaption { margin-top: 8px; font-size: 0.82rem; color: var(--c-text-light); }
+
+    /* ── Companion Banner ── */
+    .companion { background: linear-gradient(135deg, var(--c-celadon-mist), #ede9e0); border-radius: var(--radius); padding: 26px 28px; display: flex; align-items: center; gap: 20px; margin-top: 14px; }
+    .companion-icon { font-size: 2.2rem; flex-shrink: 0; }
+    .companion-text h3 { font-family: var(--font-heading); font-size: 1rem; margin-bottom: 4px; }
+    .companion-text p { font-size: 0.86rem; margin: 0; color: var(--c-text-sec); }
+    .companion-text a { color: var(--c-celadon-deep); font-weight: 700; text-decoration: none; }
+    .companion-text a:hover { text-decoration: underline; }
+
+    /* ── Task Cards ── */
+    .task-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 14px 0; }
+    .task-card { background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius); padding: 14px 16px; transition: all .2s; }
+    .task-card:hover { border-color: var(--c-celadon); }
+    .task-card h4 { font-size: 0.85rem; color: var(--c-celadon-deep); margin-bottom: 6px; }
+    .task-card .query { font-style: italic; font-size: 0.82rem; color: var(--c-text-sec); margin-bottom: 4px; }
+    .task-card .result { font-size: 0.78rem; color: var(--c-celadon); font-weight: 600; }
+
+    /* ── BibTeX ── */
+    .bib { position: relative; background: var(--c-bg-warm); border: 1px solid var(--c-border); border-radius: var(--radius); padding: 18px 20px; font-family: 'Courier New', monospace; font-size: 0.78rem; line-height: 1.55; overflow-x: auto; white-space: pre; color: var(--c-text-sec); }
+    .copy-btn { position: absolute; top: 8px; right: 10px; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: 6px; padding: 3px 12px; font-size: 0.75rem; cursor: pointer; transition: all .2s; color: var(--c-text-light); font-family: var(--font-body); }
+    .copy-btn:hover { border-color: var(--c-celadon); color: var(--c-celadon-deep); }
+
+    /* ── Footer ── */
+    footer { text-align: center; padding: 36px 20px; font-size: 0.78rem; color: var(--c-text-light); border-top: 1px solid var(--c-border); margin-top: 48px; }
+    footer a { color: var(--c-celadon); text-decoration: none; }
+
+    @media (max-width: 640px) {
+      .hero { padding: 52px 14px 28px; }
+      .pills { flex-direction: column; }
+      .pill { min-width: unset; }
+      .method-steps { grid-template-columns: 1fr; }
+      .task-cards { grid-template-columns: 1fr; }
+      .companion { flex-direction: column; text-align: center; }
+      .lang-toggle { top: 10px; right: 10px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Language Toggle -->
+<div class="lang-toggle">
+  <button class="lang-btn active" id="btn-en" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" id="btn-cn" onclick="setLang('zh')">中文</button>
+</div>
+
+<!-- ═══════════ HERO ═══════════ -->
+<header class="hero">
+  <span class="venue">NeurIPS 2025</span>
+  <h1>
+    <span lang-en>MLLM-For3D: Adapting Multimodal Large Language Model for 3D Reasoning Segmentation</span>
+    <span lang-cn>MLLM-For3D: 面向3D推理分割的多模态大语言模型适配</span>
+  </h1>
+  <p class="authors">
+    <a href="https://scholar.google.com/citations?user=YOUR_ID">Jiaxin Huang</a><sup>1,2*</sup>&nbsp;
+    <a href="#">Runnan Chen</a><sup>1*</sup>&nbsp;
+    <a href="#">Ziwen Li</a><sup>3</sup>&nbsp;
+    <a href="#">Zhengqing Gao</a><sup>4</sup>&nbsp;
+    <a href="#">Xiao He</a><sup>2</sup>&nbsp;
+    <a href="#">Yandong Guo</a><sup>2</sup>&nbsp;
+    <a href="#">Tongliang Liu</a><sup>3&dagger;</sup>&nbsp;
+    <a href="#">Mingming Gong</a><sup>5&dagger;</sup>
+  </p>
+  <p class="affil">
+    <sup>1</sup>MBZUAI&ensp;<sup>2</sup>AI2Robotics&ensp;<sup>3</sup>University of Sydney&ensp;<sup>4</sup>Texas A&amp;M University&ensp;<sup>5</sup>University of Melbourne<br>
+    <span lang-en><sup>*</sup>Equal contribution &ensp;<sup>&dagger;</sup>Corresponding authors</span>
+    <span lang-cn><sup>*</sup>共同一作 &ensp;<sup>&dagger;</sup>通讯作者</span>
+  </p>
+  <div class="links">
+    <a class="lnk" href="https://arxiv.org/abs/2503.18135" target="_blank"><i class="ai ai-arxiv"></i> arXiv</a>
+    <a class="lnk" href="https://arxiv.org/pdf/2503.18135" target="_blank"><i class="fas fa-file-pdf"></i> Paper</a>
+    <a class="lnk" href="https://github.com/tmllab/2025_NeurIPS_MLLM-For3D" target="_blank"><i class="fab fa-github"></i> Code</a>
+    <a class="lnk" href="https://github.com/liziwennba/SURPRISE3D" target="_blank"><i class="fas fa-database"></i> Surprise3D</a>
+    <a class="lnk" href="#bib"><i class="fas fa-quote-right"></i> BibTeX</a>
+  </div>
+</header>
+
+<!-- ═══════════ TEASER ═══════════ -->
+<figure class="teaser">
+  <img src="assets/mllm_framework_v2.png" alt="MLLM-For3D framework overview" loading="lazy">
+  <figcaption>
+    <span lang-en><b>Overview.</b> MLLM-For3D generates pseudo-masks from a frozen 2D MLLM across multiple views, unprojects them into 3D space, and enforces spatial consistency via Token-for-Query alignment — <em>no 3D annotations needed</em>.</span>
+    <span lang-cn><b>框架概览。</b> MLLM-For3D 利用冻结的2D多模态大语言模型生成多视角伪分割掩码，反投影至3D空间，并通过Token-for-Query对齐施加空间一致性约束——<em>无需任何3D标注</em>。</span>
+  </figcaption>
+</figure>
+
+<div class="wrap">
+
+  <!-- ═══════════ KEY INSIGHTS ═══════════ -->
+  <section>
+    <h2 class="sec-title">
+      <span lang-en>Key Insights</span>
+      <span lang-cn>核心贡献</span>
+    </h2>
+    <div class="pills">
+      <div class="pill">
+        <span class="pill-icon">🏷️</span>
+        <div class="pill-text">
+          <b lang-en>Label-Free</b><b lang-cn>无标注训练</b>
+          <span lang-en>No 3D annotations — distills reasoning from frozen 2D LISA models</span>
+          <span lang-cn>无需3D标注，从冻结的2D LISA模型蒸馏推理能力</span>
+        </div>
+      </div>
+      <div class="pill">
+        <span class="pill-icon">🧭</span>
+        <div class="pill-text">
+          <b lang-en>Spatial Consistency</b><b lang-cn>空间一致性</b>
+          <span lang-en>Attention-based fusion ensures coherent masks across views in 3D</span>
+          <span lang-cn>基于注意力的融合机制确保多视角3D掩码一致性</span>
+        </div>
+      </div>
+      <div class="pill">
+        <span class="pill-icon">🔗</span>
+        <div class="pill-text">
+          <b lang-en>Token-for-Query</b><b lang-cn>Token-for-Query对齐</b>
+          <span lang-en>Binds [SEG] token embeddings to queries for cross-view object identity</span>
+          <span lang-cn>将[SEG] Token嵌入绑定至查询，实现跨视角对象一致识别</span>
+        </div>
+      </div>
+      <div class="pill">
+        <span class="pill-icon">📈</span>
+        <div class="pill-text">
+          <b lang-en>+55% mIoU</b><b lang-cn>mIoU提升55%</b>
+          <span lang-en>State-of-the-art on multiple 3D reasoning benchmarks</span>
+          <span lang-cn>在多个3D推理分割基准上取得最优性能</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ ABSTRACT ═══════════ -->
+  <section>
+    <h2 class="sec-title">
+      <span lang-en>Abstract</span>
+      <span lang-cn>摘要</span>
+    </h2>
+    <p lang-en>
+      Reasoning segmentation aims to segment target objects based on human intent and spatial reasoning. While 2D MLLMs excel at image-level reasoning segmentation, adapting these capabilities to 3D remains underexplored. We introduce <strong>MLLM-For3D</strong>, which transfers 2D MLLM knowledge to 3D scenes by generating multi-view pseudo-masks, unprojecting them into 3D, and aligning with text embeddings. To handle cross-view hallucinations and inconsistencies, we introduce a <strong>spatial consistency strategy</strong> and a <strong>Token-for-Query</strong> alignment mechanism. Without any 3D labels, MLLM-For3D outperforms existing methods by ~55% mIoU on challenging 3D reasoning segmentation benchmarks.
+    </p>
+    <p lang-cn>
+      推理分割旨在基于人类意图和空间推理对目标对象进行分割。虽然2D多模态大语言模型在图像级推理分割上表现出色，但将这些能力迁移到3D场景的研究仍然不足。我们提出<strong>MLLM-For3D</strong>，通过生成多视角伪掩码、反投影至3D空间并与文本嵌入对齐，将2D MLLM的知识迁移到3D场景理解。为解决跨视角幻觉和不一致性问题，我们引入了<strong>空间一致性策略</strong>和<strong>Token-for-Query对齐机制</strong>。在不使用任何3D标注的情况下，MLLM-For3D在具有挑战性的3D推理分割基准上超越现有方法约55% mIoU。
+    </p>
+  </section>
+
+  <!-- ═══════════ METHOD ═══════════ -->
+  <section>
+    <h2 class="sec-title">
+      <span lang-en>How It Works</span>
+      <span lang-cn>方法概述</span>
+    </h2>
+    <p lang-en>
+      MLLM-For3D bridges the gap between powerful 2D reasoning models and 3D scene understanding through a four-stage pipeline:
+    </p>
+    <p lang-cn>
+      MLLM-For3D 通过四阶段流水线，弥合了强大的2D推理模型与3D场景理解之间的鸿沟：
+    </p>
+    <div class="method-steps">
+      <div class="method-step">
+        <span class="step-num">1</span>
+        <h4 lang-en>Multi-view Pseudo-label Generation</h4>
+        <h4 lang-cn>多视角伪标签生成</h4>
+        <p lang-en>A frozen 2D MLLM (LISA/LISA++) processes each rendered view with the text query, producing per-view segmentation masks and [SEG] token embeddings.</p>
+        <p lang-cn>冻结的2D MLLM（LISA/LISA++）对每个渲染视角配合文本查询，生成逐视角分割掩码和[SEG] Token嵌入。</p>
+      </div>
+      <div class="method-step">
+        <span class="step-num">2</span>
+        <h4 lang-en>Token Attention Filtering</h4>
+        <h4 lang-cn>Token注意力过滤</h4>
+        <p lang-en>Unreliable views with hallucinated objects are filtered by analyzing [SEG] token attention scores, retaining only top-<em>r</em> confident views.</p>
+        <p lang-cn>通过分析[SEG] Token的注意力分数过滤包含幻觉对象的不可靠视角，仅保留置信度最高的top-<em>r</em>个视角。</p>
+      </div>
+      <div class="method-step">
+        <span class="step-num">3</span>
+        <h4 lang-en>3D Unprojection & Fusion</h4>
+        <h4 lang-cn>3D反投影与融合</h4>
+        <p lang-en>Reliable 2D masks are unprojected into 3D point space. An attention-based fusion module weights each view's contribution by reliability and semantic similarity.</p>
+        <p lang-cn>将可靠的2D掩码反投影至3D点空间，通过基于注意力的融合模块按可靠性和语义相似度加权每个视角的贡献。</p>
+      </div>
+      <div class="method-step">
+        <span class="step-num">4</span>
+        <h4 lang-en>Token-for-Query Alignment</h4>
+        <h4 lang-cn>Token-for-Query对齐</h4>
+        <p lang-en>A unified query embedding derived from [SEG] tokens across views enables consistent identification of the same 3D object across all viewpoints.</p>
+        <p lang-cn>从跨视角的[SEG] Token中提取统一查询嵌入，确保在所有视角中对同一3D对象的一致识别。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ TASKS ═══════════ -->
+  <section>
+    <h2 class="sec-title">
+      <span lang-en>Supported Tasks</span>
+      <span lang-cn>支持的任务</span>
+    </h2>
+    <div class="task-cards">
+      <div class="task-card">
+        <h4 lang-en>3D Reasoning Segmentation</h4>
+        <h4 lang-cn>3D推理分割</h4>
+        <div class="query" lang-en>"It's hot, where can I get a cold drink?"</div>
+        <div class="query" lang-cn>"天气很热，哪里可以拿到冷饮？"</div>
+        <div class="result" lang-en>→ Segments the refrigerator</div>
+        <div class="result" lang-cn>→ 分割出冰箱</div>
+      </div>
+      <div class="task-card">
+        <h4 lang-en>3D Hierarchical Search</h4>
+        <h4 lang-cn>3D层次搜索</h4>
+        <div class="query" lang-en>"The book on the second shelf near the window"</div>
+        <div class="query" lang-cn>"窗户旁边第二层书架上的书"</div>
+        <div class="result" lang-en>→ Locates and segments the specific book</div>
+        <div class="result" lang-cn>→ 定位并分割出特定的书</div>
+      </div>
+      <div class="task-card">
+        <h4 lang-en>3D Referring Segmentation</h4>
+        <h4 lang-cn>3D指称分割</h4>
+        <div class="query" lang-en>"The red chair next to the table"</div>
+        <div class="query" lang-cn>"桌子旁边的红色椅子"</div>
+        <div class="result" lang-en>→ Segments the target chair</div>
+        <div class="result" lang-cn>→ 分割出目标椅子</div>
+      </div>
+      <div class="task-card">
+        <h4 lang-en>3D QA with Mask Output</h4>
+        <h4 lang-cn>3D问答+掩码输出</h4>
+        <div class="query" lang-en>"Where can I sit down?"</div>
+        <div class="query" lang-cn>"哪里可以坐下？"</div>
+        <div class="result" lang-en>→ Highlights all available chairs</div>
+        <div class="result" lang-cn>→ 高亮所有可用的椅子</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ RESULTS ═══════════ -->
+  <section>
+    <h2 class="sec-title">
+      <span lang-en>Results</span>
+      <span lang-cn>实验结果</span>
+    </h2>
+
+    <!-- Accordion: ReasonSeg3D -->
+    <div class="acc open">
+      <div class="acc-head" onclick="toggleAcc(this)">
+        <span>3D Reasoning Segmentation (ReasonSeg3D)</span>
+        <span class="acc-arrow">▼</span>
+      </div>
+      <div class="acc-body">
+        <div class="acc-inner">
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Method</th><th>3D Labels</th><th>cIoU</th><th>gIoU</th><th>Acc@0.25</th><th>Acc@0.50</th></tr></thead>
+              <tbody>
+                <tr><td>CLIP2Scene</td><td>✗</td><td>5.7</td><td>11.2</td><td>—</td><td>—</td></tr>
+                <tr><td>OpenScene</td><td>✗</td><td>6.8</td><td>12.5</td><td>—</td><td>—</td></tr>
+                <tr><td>Reason3D</td><td>✓</td><td>19.0</td><td>22.3</td><td>25.0</td><td>15.0</td></tr>
+                <tr class="best"><td>MLLM-For3D (Ours)</td><td>✗</td><td><b>36.2</b></td><td><b>38.5</b></td><td><b>47.5</b></td><td><b>32.5</b></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Accordion: VG-w/o-ON -->
+    <div class="acc">
+      <div class="acc-head" onclick="toggleAcc(this)">
+        <span>Visual Grounding w/o Object Names (VG-w/o-ON)</span>
+        <span class="acc-arrow">▼</span>
+      </div>
+      <div class="acc-body">
+        <div class="acc-inner">
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Method</th><th>Acc@0.25</th><th>Acc@0.50</th></tr></thead>
+              <tbody>
+                <tr><td>ScanRefer</td><td>9.8</td><td>5.1</td></tr>
+                <tr><td>EDA</td><td>12.5</td><td>6.3</td></tr>
+                <tr><td>Reason3D</td><td>24.3</td><td>14.8</td></tr>
+                <tr class="best"><td>MLLM-For3D (Ours)</td><td><b>38.7</b></td><td><b>28.4</b></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p style="font-size:.82rem;margin-top:10px;color:var(--c-text-light)">
+      <span lang-en>See the <a href="https://arxiv.org/abs/2503.18135" style="color:var(--c-celadon)">paper</a> for full results, ablation studies, and qualitative visualizations.</span>
+      <span lang-cn>完整实验结果、消融研究和定性可视化请参阅<a href="https://arxiv.org/abs/2503.18135" style="color:var(--c-celadon)">论文</a>。</span>
+    </p>
+  </section>
+
+  <!-- ═══════════ COMPANION ═══════════ -->
+  <section>
+    <h2 class="sec-title">
+      <span lang-en>Companion Work</span>
+      <span lang-cn>关联工作</span>
+    </h2>
+    <div class="companion">
+      <span class="companion-icon">🔗</span>
+      <div class="companion-text">
+        <h3>
+          <span lang-en>Surprise3D: A Dataset for Spatial Understanding and Reasoning in Complex 3D Scenes</span>
+          <span lang-cn>Surprise3D: 面向复杂3D场景空间理解与推理的数据集</span>
+        </h3>
+        <p>
+          <span lang-en>Also accepted at <strong>NeurIPS 2025</strong>. 200k+ vision-language pairs · 900+ scenes · 89k+ human-annotated spatial queries.<br>A large-scale benchmark for spatial reasoning in complex 3D environments.</span>
+          <span lang-cn>同样被 <strong>NeurIPS 2025</strong> 接收。20万+视觉-语言对 · 900+场景 · 8.9万+人工标注空间查询。<br>面向复杂3D环境空间推理的大规模基准。</span>
+          <br><br>
+          <a href="https://arxiv.org/abs/2507.07781">Paper</a>&ensp;·&ensp;
+          <a href="https://github.com/liziwennba/SURPRISE3D">Code</a>&ensp;·&ensp;
+          <a href="https://huggingface.co/datasets/hhllzz/surprise-3d">HuggingFace</a>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ BIBTEX ═══════════ -->
+  <section id="bib">
+    <h2 class="sec-title">BibTeX</h2>
+    <div class="bib">
+      <button class="copy-btn" onclick="copyBib()">📋 Copy</button>
+@inproceedings{huang2025mllmfor3d,
+  title     = {MLLM-For3D: Adapting Multimodal Large Language
+               Model for 3D Reasoning Segmentation},
+  author    = {Huang, Jiaxin and Chen, Runnan and Li, Ziwen
+               and Gao, Zhengqing and He, Xiao and Guo, Yandong
+               and Liu, Tongliang and Gong, Mingming},
+  booktitle = {Advances in Neural Information Processing
+               Systems (NeurIPS)},
+  year      = {2025}
+}</div>
+  </section>
+
+  <!-- ═══════════ ACK ═══════════ -->
+  <section>
+    <h2 class="sec-title">
+      <span lang-en>Acknowledgements</span>
+      <span lang-cn>致谢</span>
+    </h2>
+    <p>
+      <span lang-en>This project builds upon <a href="https://github.com/cv3d/CLIP2Scene">CLIP2Scene</a>, <a href="https://github.com/dvlab-research/LISA">LISA</a>, and <a href="https://github.com/NVIDIA/MinkowskiEngine">MinkowskiEngine</a>. We thank the authors for open-sourcing their work. The project page template is adapted from <a href="https://nerfies.github.io">Nerfies</a>.</span>
+      <span lang-cn>本工作基于 <a href="https://github.com/cv3d/CLIP2Scene">CLIP2Scene</a>、<a href="https://github.com/dvlab-research/LISA">LISA</a> 和 <a href="https://github.com/NVIDIA/MinkowskiEngine">MinkowskiEngine</a> 构建。感谢原作者开源代码。页面模板改编自 <a href="https://nerfies.github.io">Nerfies</a>。</span>
+    </p>
+  </section>
+</div>
+
+<footer>
+  <span lang-en>&copy; 2025 MLLM-For3D Authors. Template adapted from <a href="https://nerfies.github.io">Nerfies</a> &amp; <a href="https://github.com/eliahuhorwitz/Academic-project-page-template">Academic Project Page Template</a>.</span>
+  <span lang-cn>&copy; 2025 MLLM-For3D 作者团队。页面模板基于 <a href="https://nerfies.github.io">Nerfies</a> 与 <a href="https://github.com/eliahuhorwitz/Academic-project-page-template">Academic Project Page Template</a> 改编。</span>
+</footer>
+
+<script>
+function setLang(lang) {
+  document.body.classList.toggle('zh', lang === 'zh');
+  document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+  document.getElementById('btn-cn').classList.toggle('active', lang === 'zh');
+}
+function toggleAcc(el) {
+  el.parentElement.classList.toggle('open');
+}
+function copyBib() {
+  const t = document.querySelector('.bib').textContent.replace('📋 Copy','').trim();
+  navigator.clipboard.writeText(t).then(() => {
+    const b = document.querySelector('.copy-btn');
+    b.textContent = '✓ Copied!';
+    setTimeout(() => b.textContent = '📋 Copy', 1800);
+  });
+}
+</script>
+</body>
+</html>
